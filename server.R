@@ -1,5 +1,5 @@
 
-# RustWatch model version from Mika Tode and continue edited by Ying on 10/10/2019
+# RustWatch model version from Mika Tode and continue edited by Ying on 20/11/2019
 # Shiny application for modelling the evolution of pathogene populations
 
 library(ggplot2)
