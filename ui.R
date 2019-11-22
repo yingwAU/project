@@ -140,8 +140,8 @@ shinyUI <- navbarPage("Rust Fight",
                                  ) ,
                                  # Empty main panel, maybe show the inputs, or some calculations
                                  mainPanel(
-                                   #tableOutput('sample.parameter'),
-                                   #DT::dataTableOutput("fileParameter")
+                                   tableOutput('sample.parameter'),
+                                   DT::dataTableOutput("fileParameter")
                                    #tableOutput("mlgSummaryTable"),
                                  )
                                )
