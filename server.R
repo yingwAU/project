@@ -283,33 +283,39 @@ shinyServer <- function(input, output, session) {
         n <- input$loci.n
         # Saving the "basic" parameters in a dataframe
         parameters <- data.frame(n=n,m=m,t=t)
-        cv_vector <- as.numeric(numextractall(input$fitness.cost))
-        names(cv_vector) <- paste0('Loci',1:input$loci.n)
-        ai_vector <- as.numeric(numextractall(input$ai_vector));names(ai_vector) <- paste0("Aggressiveness", 1:2^n)
-        jxr_matrix <- input$jxr.matrix
-        pj_vector <- as.numeric(numextractall(input$pj_vector))
-        sjxt_matrix <- input$sjxt.matrix
+        #cv_vector <- as.numeric(numextractall(input$fitness.cost))
+        cv_vector <- runif(n);names(cv_vector)<-paste0('Loci',1:n)
+        #names(cv_vector) <- paste0('Loci',1:input$loci.n)
+        #ai_vector <- as.numeric(numextractall(input$ai_vector));names(ai_vector) <- paste0("Aggressiveness", 1:2^n)
+        ai_vector <- c(aggressiveness=rep(0.5,2^n))
+        #jxr_matrix <- input$jxr.matrix
+        jxr_matrix <- matrix(sample(c(1,.5,.25,.3,.4),size=m*n,replace = T),nrow=m,ncol=n)
+        #pj_vector <- as.numeric(numextractall(input$pj_vector))
+        pj_vector <- runif(m);
+        #sjxt_matrix <- input$sjxt.matrix
+        sjxt_matrix <- matrix( sample(c(.1,.5,.2),size=t*m,replace = T),nrow=t,ncol=m)
         ixv_matrix <- bincode(n);ixv_matrix <- as.matrix(ixv_matrix)
         # This vector is calculated via a function given in the documentation
+        #fi_initial_vector<-exp(n-apply(ixv_matrix,1,FUN=sum))/sum(exp(n-apply(ixv_matrix,1,FUN=sum)))
         Ci_vector<-(1-apply(1-t(t(ixv_matrix)*cv_vector),1,FUN=prod))
         # Probably already calculated before, it may be possible to delete this part
         # And write fi_initial_vector <- fi1 or fi_initial_vector <- input$fi1
-        if(input$distr == "unif"){
-          fi1 <-  rep(1/(2^input$loci.n), 2^input$loci.n)
-          fi1
-        }
-        else if (input$distr == "exp"){
-          fi1 <-exp(input$loci.n-apply(bincode(input$loci.n),1,FUN=sum))/sum(exp(input$loci.n-apply(bincode(input$loci.n),1,FUN=sum)))
-          fi1}
-        else if (input$distr == "exp2"){
-          fi1 <-exp(exp(input$loci.n-apply(bincode(input$loci.n),1,FUN=sum)))/sum(exp(exp(input$loci.n-apply(bincode(input$loci.n),1,FUN=sum))))
-          fi1
-        }
-        else if (input$distr == "qexp"){
-          fi1 <-exp(input$loci.n-apply(bincode(input$loci.n),1,FUN=sum))^2/sum(exp(input$loci.n-apply(bincode(input$loci.n),1,FUN=sum))^2)
-          fi1}
-        
-        fi_initial_vector<- fi1
+       if(input$distr == "unif"){
+       fi1 <-  rep(1/(2^input$loci.n), 2^input$loci.n)
+        fi1
+       }
+       else if (input$distr == "exp"){
+       fi1 <-exp((input$loci.n)-apply(bincode(input$loci.n),1,FUN=sum))/sum(exp(input$loci.n-apply(bincode(input$loci.n),1,FUN=sum)))
+       fi1}
+       else if (input$distr == "exp2"){
+       fi1 <-exp(exp((input$loci.n)-apply(bincode(input$loci.n),1,FUN=sum)))/sum(exp(exp(input$loci.n-apply(bincode(input$loci.n),1,FUN=sum))))
+       fi1
+       }
+       else if (input$distr == "qexp"){
+         fi1 <-exp((input$loci.n)-apply(bincode(input$loci.n),1,FUN=sum))^2/sum(exp(input$loci.n-apply(bincode(input$loci.n),1,FUN=sum))^2)
+         fi1}
+
+       fi_initial_vector<- fi1
       }
       
       # this part is created for the upload of excel sheets with a certain structure
@@ -328,16 +334,17 @@ shinyServer <- function(input, output, session) {
         if(is.null(inFile)){return(NULL)}
         parameters <- read.xlsx(inFile$datapath,'parameters')
         n = unlist(parameters['n'])
-        cv_vector <- unlist(read.xlsx(inFile$datapath,'cv_vector',header = T,row.names=F))
-        #cv_vector <- unlist(read.xlsx(inFile$datapath,'cv_vector',header = T,row.names=T))
-        ai_vector <- unlist(read.xlsx(inFile$datapath,'ai_vector',header = T, row.names=F))
-        #ai_vector <- unlist(read.xlsx(inFile$datapath,'ai_vector',header = T))
-        jxr_matrix<- read.xlsx(inFile$datapath,'jr_matrix',header = T, row.names = F)
-        #jxr_matrix<- read.xlsx(inFile$datapath,'jr_matrix',header = T)
-        pj_vector <- unlist(read.xlsx(inFile$datapath,'pj_vector',header = T,row.names=F))
+        #cv_vector <- unlist(read.xlsx(inFile$datapath,'cv_vector',header = T,row.names=F))
+        cv_vector <- unlist(read.xlsx(inFile$datapath,'cv_vector',header = T,row.names=T))
+        #ai_vector <- unlist(read.xlsx(inFile$datapath,'ai_vector',header = T, row.names=F))
+        ai_vector <- unlist(read.xlsx(inFile$datapath,'ai_vector',header = T))
+        #jxr_matrix<- read.xlsx(inFile$datapath,'jr_matrix',header = T, row.names = F)
+        jxr_matrix<- read.xlsx(inFile$datapath,'jr_matrix',header = T)
         #pj_vector <- unlist(read.xlsx(inFile$datapath,'pj_vector',header = T,row.names=F))
-        sjxt_matrix <- read.xlsx(inFile$datapath,'sjxt_matrix',header = T, row.names = T)
-        ixv_matrix <- bincode(n); ixv_matrix <- as.matrix(ixv_matrix)
+        pj_vector <- unlist(read.xlsx(inFile$datapath,'pj_vector',header = T,row.names=T))
+        #sjxt_matrix <- read.xlsx(inFile$datapath,'sjxt_matrix',header = T, row.names = T)
+        sjxt_matrix <- read.xlsx(inFile$datapath,'sjxt_matrix',header = T)
+        ixv_matrix <- bincode(n) #ixv_matrix <- as.matrix(ixv_matrix)
         #hans fi initial vector
         # The distribution of the fi initial vector has to be deducted from the excel sheet too
         # fi_initial_vector <- read.xlsx(inFile$datapath,'fi_initial_vector',header = F)
@@ -376,7 +383,7 @@ shinyServer <- function(input, output, session) {
   output$fileParameter <- DT::renderDataTable({
     parameter.selected <- input$sel.file.parameter
     parameters.from.file <- input.values.from.file()
-    parameter.value <- data.frame(parameters.from.file[[parameter.selected]])
+    parameter.value <- data.frame(parameters.from.file[parameter.selected])
     return(parameter.value)
   })
   
